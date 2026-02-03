@@ -79,7 +79,7 @@ module vga(
   logic activeVideo = (hc < HPIXELS) && (vc < VPIXELS);
   always_comb
   begin
-    /*  (4): check if we're within the active video range;
+    /*  4): check if we're within the active video range;
             if we are, drive the RGB outputs with the input color values
             if not, we're in the blanking interval, so set them all to 0
         NOTE: our inputs are fewer bits than the outputs,so left-shift accordingly!
@@ -95,5 +95,4 @@ module vga(
         blue = 4'd0;
     end
   end
-
 endmodule
