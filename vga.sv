@@ -44,19 +44,9 @@ module vga(
     end
   end
 
-  /* these registers are for storing the horizontal & vertical counters
-      we're outputting the counter values from this module so that 
-             other modules can stay in sync with the VGA
-      (it's a surprise tool that will help us later!)
-   */
+  // these registers are for storing the horizontal & vertical counters
   logic [9:0] hc;
   logic [9:0] vc;
-
-  initial
-  begin
-    hc = 1'd0;
-    vc = 1'd0;
-  end
 
   assign hc_out = hc;
   assign vc_out = vc;
@@ -81,23 +71,29 @@ module vga(
     end
   end
 
-  // (3): when should hsync and vsync go low?
+  // 3) hsync and vsync go low when we're within the pulse ranges
   assign hsync = (hc < HPIXELS+HFP) || (hc >= HPIXELS+HFP+HSPULSE);
   assign vsync = (vc < VPIXELS+VFP) || (vc >= VPIXELS+VFP+VSPULSE);
 
-  // in the combinational block, we set red, green, blue outputs
+  // In the combinational block, we set red, green, blue outputs
   logic activeVideo = (hc < HPIXELS) && (vc < VPIXELS);
   always_comb
   begin
     /*  (4): check if we're within the active video range;
             if we are, drive the RGB outputs with the input color values
             if not, we're in the blanking interval, so set them all to 0
-        NOTE: our inputs are fewer bits than the outputs,
-              so left-shift accordingly!
+        NOTE: our inputs are fewer bits than the outputs,so left-shift accordingly!
     */
-    red = 0;
-    green = 0;
-    blue = 0;
+    // Goes from 3-3-2 to 4-4-4 by shifting left
+    if (activeVideo) begin 
+        red = input_red << 1;
+        green = input_green << 1;
+        blue = input_blue << 2;
+    end else begin
+        red = 4'd0;
+        green = 4'd0;
+        blue = 4'd0;
+    end
   end
 
 endmodule
