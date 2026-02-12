@@ -33,7 +33,7 @@ localparam BLK = 8'h00;
 localparam WHT = 8'hff;
 localparam RED = 8'he0;
 localparam BLU = 8'h03;
-assign color = test_sprite[address];
+assign color = test_sprite[addr];
 logic [7:0] test_sprite [0:767] = '{ 
 //  0       1       2      3      4      5      6      7      8      9      10     11     12     13     14     15     16     17     18     19     20     21     22     23      24      25      26     27     28     29     30     31      
     BLK,    BLK,    BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,    BLK,    BLK,    BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   // 0
