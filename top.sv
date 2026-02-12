@@ -6,7 +6,7 @@ module top (
     output logic [3:0] vga_r,
     output logic [3:0] vga_g,
     output logic [3:0] vga_b
-)
+);
 
 // For clock divder we need 25Mhz, given 100Mhz divide by 4
 // 60Hz * 800 * 525 = 25,200,000 Hz
