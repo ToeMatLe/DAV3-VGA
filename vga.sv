@@ -71,14 +71,16 @@ module vga(
     end
   end
 
-  // 3) hsync and vsync go low when we're within the pulse ranges
-  assign hsync = (hc < HPIXELS+HFP) || (hc >= HPIXELS+HFP+HSPULSE);
-  assign vsync = (vc < VPIXELS+VFP) || (vc >= VPIXELS+VFP+VSPULSE);
+    // 3) hsync and vsync go low when we're within the pulse ranges
+    assign hsync = (hc < HPIXELS+HFP) || (hc >= HPIXELS+HFP+HSPULSE);
+    assign vsync = (vc < VPIXELS+VFP) || (vc >= VPIXELS+VFP+VSPULSE);
 
-  // In the combinational block, we set red, green, blue outputs
-  logic activeVideo = (hc < HPIXELS) && (vc < VPIXELS);
-  always_comb
-  begin
+    // In the combinational block, we set red, green, blue outputs
+    logic activeVideo;
+    assign activeVideo = (hc < HPIXELS) && (vc < VPIXELS);
+
+    always_comb
+    begin
     /*  4): check if we're within the active video range;
             if we are, drive the RGB outputs with the input color values
             if not, we're in the blanking interval, so set them all to 0
