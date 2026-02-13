@@ -17,9 +17,14 @@ module top (
 logic vgaclk;
 logic counter; // 1 bit counter to count every other posedge of clk
 always_ff @(posedge clk) begin
+    if (rst_btn) begin
+        counter <= 1'b0;
+        vgaclk  <= 1'b0;
+    end else begin
     counter <= counter + 1'b1;
     if (counter) begin
         vgaclk <= ~vgaclk;
+    end
     end
 end
 
@@ -53,12 +58,40 @@ graphics gfx (
     .addr(pixAddr),
     .color(color8)
 );
-// Split 8-bit packed color into 3:3:2
-assign input_red = color8[7:5];
-assign input_green = color8[4:2];
-assign input_blue = color8[1:0];
+// Active video gate (640x480)
+localparam int HPIXELS = 640;
+localparam int VPIXELS = 480;
+logic activeVideo;
+assign activeVideo = (hc < HPIXELS) && (vc < VPIXELS);
 
-vga DUT1 (
+// Ping-pong expects 10-bit addresses for 0..767
+logic [9:0] pixAddrPP;
+assign pixAddrPP = pixAddr[9:0]; // just take the lower 10 bits, since we only have 768 pixels (0..767)
+
+// Frame start pulse for buffer swap
+logic frameStart;
+assign frameStart = (hc == 10'd0) && (vc == 10'd0);
+logic [7:0] color8PP; // data read from ping pong RAM
+
+pingPong #(
+    .DEPTH(768),
+    .ADDR_W(10)
+) DUT1 (
+    .vgaclk(vgaclk),
+    .rst(rst),
+    .frameStart(frameStart),
+    .rdAddr(pixAddrPP),
+    .rdData(color8PP),
+    .we(activeVideo), // only write when we're in active video, prevent tearing
+    .wrAddr(pixAddrPP),
+    .wrData(color8)
+);
+// Split 8-bit packed color into 3:3:2
+assign input_red = color8PP[7:5];
+assign input_green = color8PP[4:2];
+assign input_blue = color8PP[1:0];
+
+vga DUT2 (
     .vgaclk(vgaclk),
     .rst(rst),
     .input_red(input_red),
