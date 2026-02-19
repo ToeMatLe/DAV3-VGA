@@ -52,9 +52,21 @@ logic [1:0] input_blue;
 // Graphics module (blocking + address)
 logic [7:0] color8; // 8-bit packed color from graphics module
 logic [15:0] pixAddr; // pixel address from graphics module
+
+// Frame start pulse for buffer swap
+logic frameStart;
+assign frameStart = (hc == 10'd0) && (vc == 10'd0);
+// Frame counter (increments once per frame) MAKING A MOVING BAR
+logic [23:0] frameCount;
+always_ff @(posedge vgaclk or posedge rst) begin
+  if (rst) frameCount <= '0;
+  else if (frameStart) frameCount <= frameCount + 1;
+end
+
 graphics gfx (
     .hc(hc),
     .vc(vc),
+    .frame(frameCount),
     .addr(pixAddr),
     .color(color8)
 );
@@ -68,9 +80,6 @@ assign activeVideo = (hc < HPIXELS) && (vc < VPIXELS);
 logic [9:0] pixAddrPP;
 assign pixAddrPP = pixAddr[9:0]; // just take the lower 10 bits, since we only have 768 pixels (0..767)
 
-// Frame start pulse for buffer swap
-logic frameStart;
-assign frameStart = (hc == 10'd0) && (vc == 10'd0);
 logic [7:0] color8PP; // data read from ping pong RAM
 
 pingPong #(

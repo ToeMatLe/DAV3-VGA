@@ -1,6 +1,7 @@
 module graphics (
     input logic [9:0] hc,
     input logic [9:0] vc,
+    input logic [23:0] frame, // frame count for animation
     output logic [15:0] addr,
     output logic [7:0] color
 );
@@ -10,9 +11,19 @@ localparam int HBLK = 32; // HPIXELS / 20
 localparam int VBLK = 24; // VPIXELS / 20
 localparam int SIZE = 768; //HBLK * VBLK
 
+// Colors
+localparam BLK = 8'h00;
+localparam WHT = 8'hff;
+localparam RED = 8'he0;
+localparam BLU = 8'h03;
+
 // scaled coords
 logic [5:0] x; // 0..31
 logic [4:0] y; // 0..23
+
+ // barX moves 0..31 and wraps
+logic [4:0] barX;
+assign barX = frame[4:0];         // slow-ish already (once per frame)
 
 logic activeVideo;
 assign activeVideo = (hc < HPIXELS) && (vc < VPIXELS);
@@ -22,6 +33,9 @@ always_comb begin
         x = hc / 20;
         y = vc / 20;
         addr = (y * HBLK) + x; // 0 - 767
+        // draw bar
+        if (x[4:0] == barX) color = RED; // bright red bar ||||||R||||||
+        else color = BLK; // black background
     end else begin
         x = '0;
         y = '0;
@@ -29,11 +43,8 @@ always_comb begin
     end
 end
 
+/*
 // Test Sprite
-localparam BLK = 8'h00;
-localparam WHT = 8'hff;
-localparam RED = 8'he0;
-localparam BLU = 8'h03;
 logic [7:0] test_sprite [0:767] = '{ 
 //  0       1       2      3      4      5      6      7      8      9      10     11     12     13     14     15     16     17     18     19     20     21     22     23      24      25      26     27     28     29     30     31      
     BLK,    BLK,    BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,    BLK,    BLK,    BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   // 0
@@ -62,4 +73,5 @@ logic [7:0] test_sprite [0:767] = '{
     BLK,    BLK,    BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,   BLK,    BLK,    BLK,    BLK,   BLK,   BLK,   BLK,   BLK,   BLK    // 23
 };
 assign color = test_sprite[addr];
+*/
 endmodule
